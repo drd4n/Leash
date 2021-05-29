@@ -5,7 +5,7 @@ const app = express()
 
 const db = "mongodb+srv://leashposts:leashmasterposts@leash.t5u93.mongodb.net/Leash?retryWrites=true&w=majority";
 
-require("dotenv").config()
+require("dotenv").config();
 
 app.use(express.json())
 app.use(cors())
@@ -25,13 +25,13 @@ const postRoute = require('./routes/postRoute')
 const feedRoute = require('./routes/feedRoute')
 const commentRoute = require('./routes/commentRoute')
 
+app.use('/', feedRoute)
 app.use('/post', postRoute)
-app.use('/feed', feedRoute)
 app.use('/comment', commentRoute)
 
 //Port
 const port = process.env.PORT || 3001;
-app.listen(port, () => {
+app.listen(process.env.PORT || 3001, () => {
     console.log('Yark Ja Norn on port ' + port)
 });
  
