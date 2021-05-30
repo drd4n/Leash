@@ -8,6 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cors())
+app.use(express.static('public'));
 
 //Post Models
 const PostModel = require('../models/Post');
