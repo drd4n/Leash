@@ -25,7 +25,7 @@ router.route('/').get((req, res) => {
 })
 
 //route to get specific post
-router.route('/:postId').get((req, res, next) => {
+router.route('/p/:postId').get((req, res, next) => {
     const _id = req.rarams.postId
     PostModel.findById(_id, (error, data) => {
         if(error) return next(error)
