@@ -9,10 +9,10 @@ const PostSchema = mongoose.Schema({
         type: [String]
     },
     upvote: {
-        type: [mongoose.Types._ObjectId]
+        type: [String]
     },
     downvote: {
-        type: [mongoose.Types._ObjectId]
+        type: [String]
     },
     tag: {
         type: [String]
