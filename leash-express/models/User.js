@@ -1,27 +1,38 @@
 const mongoose = require('mongoose')
 
 const UserSchema = mongoose.Schema({
-    user_id: {
+    firstname: {
         type: String,
-        required: true
+        require: true
     },
-    fullname: {
-        type: String
+    lastname: {
+        type: String,
+        require: true
+    },
+    email: {
+        type: String,
+        require: 'Email is required'
+    },
+    dob: {
+        type: Date,
+        require: true
     },
     username: {
-        type: String
+        type: String,
+        require: true
     },
     password: {
-        type: String
+        type: String,
+        require: true
     },
     interesting: {
         type: [String]
     },
     veterinarian_file: {
-        type: String
+        type: File
     },
     admin_approval: {
-        type: Boolean
+        type: String
     }
 }, 
     {
