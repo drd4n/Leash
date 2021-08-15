@@ -38,7 +38,6 @@ router.route('/createPost').post((req, res, next) => {
   }
 })
 
-
 //aws config
 aws.config.update(config.credentials)
 const s3 = new aws.S3();
