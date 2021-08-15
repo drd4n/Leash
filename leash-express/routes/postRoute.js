@@ -56,7 +56,6 @@ var uploadPicture = multer({
   })
 })
 
-
 //define function upload to s3
 const singleFileUpload = uploadPicture.single('image');
 
@@ -139,9 +138,7 @@ router.route(`/showPostImage`).post(async (req, res, next) => {
         arrayOfSrc.push(`data:${mimeType};base64,${b64}`)
       })
     }
-    setTimeout(() => {
       return res.json({ src: arrayOfSrc })
-    }, 1500 * arrayOfLinks.length)
   }
 })
 
