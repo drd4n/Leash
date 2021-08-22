@@ -120,7 +120,7 @@ async function getMultipleImages(arrayOfLinks) {
 }
 
 //route to request all images of 1 post
-router.route(`/showPostImage`).post(async (req, res, next) => {
+router.route(`/showPostImage`).post(async(req, res, next) => {
   const arrayOfLinks = req.body.picture_link
   const arrayOfSrc = []
   if (Array.isArray(arrayOfLinks)) {
@@ -130,12 +130,13 @@ router.route(`/showPostImage`).post(async (req, res, next) => {
         Bucket: "leash-picture-posting",
         Key: arrayOfLinks[index]
       }
-      s3.getObject(params, function (err, data) {
-        if (err) console.log(err)
+      await s3.getObject(params).promise().then( (data) => {
         console.log(data)
         const b64 = Buffer.from(data.Body).toString('base64');
         const mimeType = 'image/jpg';
         arrayOfSrc.push(`data:${mimeType};base64,${b64}`)
+      }).catch(e => {
+        console.log(e)
       })
     }
       return res.json({ src: arrayOfSrc })
