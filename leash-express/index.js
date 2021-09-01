@@ -1,6 +1,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 var cors = require('cors');
+const createError = require('http-errors')
+
 const app = express()
 
 const db = "mongodb+srv://leashposts:leashmasterposts@leash.t5u93.mongodb.net/Leash?retryWrites=true&w=majority";
@@ -24,10 +26,12 @@ console.log('db connected')
 const postRoute = require('./routes/postRoute')
 const feedRoute = require('./routes/feedRoute')
 const commentRoute = require('./routes/commentRoute')
+const authRoute = require('./routes/authRoute' )
 
 app.use('/', feedRoute)
 app.use('/post', postRoute)
 app.use('/comment', commentRoute)
+app.use('/auth', authRoute)
 
 //Port
 const port = process.env.PORT || 3001;

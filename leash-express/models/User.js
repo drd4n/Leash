@@ -29,7 +29,7 @@ const UserSchema = mongoose.Schema({
         type: [String]
     },
     veterinarian_file: {
-        type: File
+        type: String
     },
     admin_approval: {
         type: String
