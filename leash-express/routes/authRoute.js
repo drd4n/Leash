@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: false }))
 //User Models
 const UserModel = require('../models/User');
 
+//register
 router.route('/register').post(
     [
         body('firstname', 'firstname is required').not().isEmpty(),
@@ -36,12 +37,12 @@ router.route('/register').post(
                 }
             })
     ],
-    (req, res, next) => {
+    async (req, res, next) => {
 
         // const firstname = req.body.firstname
         // const lastname = req.body.lastname
         // const email = req.body.email
-        // const dob = req.body.dob
+        const dob = req.body.dob
         // const username = req.body.username
         // const password = req.body.password
         // check('password', 'Password is invalid').not().equals(req.body.crPassword);
@@ -52,19 +53,44 @@ router.route('/register').post(
             return res.status(400).json({ errors: errors.mapped() })
         }
 
+        //TODO
         //check duplicated email and username
 
-        console.log(req.body.dob)
+        
+        console.log(new Date('10-10-2021'))
+        const newDob = new Date(dob).setHours(new Date(dob).getHours()+7)
+        // .toLocaleString('en-GB', {
+        //     timeZone: 'Asia/Bangkok'
+        // })
+        console.log(new Date(newDob))
         const user = new UserModel({
             firstname: req.body.firstname,
             lastname: req.body.lastname,
             email: req.body.email,
-            dob: req.body.dob,
+            dob: newDob,
             username: req.body.username,
             password: req.body.password
         })
-        return res.status(200).json(user)
 
+        bcrypt.genSalt(10 , (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                if(err){
+                    console.log(err)
+                }
+                user.password = hash
+                user.save((err) => {
+                    if(err){
+                        console.log(err)
+                        return
+                    } else {
+                        return res.status(200).json({message: "You are now registered"})
+                    }
+                })
+            })
+        })
     })
+
+    //login
+    // router.route('/login')
 
 module.exports = router;
