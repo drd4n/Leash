@@ -53,9 +53,16 @@ router.route('/register').post(
             return res.status(400).json({ errors: errors.mapped() })
         }
 
-        //TODO
         //check duplicated email and username
+        const emailChecker = await UserModel.findOne({email: req.body.email})
+        if(emailChecker){
+            return res.status(400).json({errors:"This E-mail has been used"})
+        }
 
+        const usernameChecker = await UserModel.findOne({username: req.body.username})
+        if(usernameChecker){
+            return res.status(400).json({errors: "This Username has been used"})
+        }
         
         console.log(new Date('10-10-2021'))
         const newDob = new Date(dob).setHours(new Date(dob).getHours()+7)
@@ -91,6 +98,16 @@ router.route('/register').post(
     })
 
     //login
-    // router.route('/login')
+    router.route('/login').post((req, res, next) => {
+        passport.authenticate('local',{ 
+            successRedirect: '/ping',
+            failureRedirect: '/auth/login' })
+            (req, res, next)
+    })
+
+    //get login failed message
+    router.route('/login').get((req, res, next) => {
+        return res.status(400).json({errors:"username or password not found"})
+    })
 
 module.exports = router;

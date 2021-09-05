@@ -2,19 +2,25 @@ const express = require('express')
 const mongoose = require('mongoose')
 var cors = require('cors');
 const createError = require('http-errors')
+const db = require('./config/db')
+const passport = require('passport')
 
 const app = express()
-
-const db = "mongodb+srv://leashposts:leashmasterposts@leash.t5u93.mongodb.net/Leash?retryWrites=true&w=majority";
 
 require("dotenv").config();
 
 app.use(express.json())
 app.use(cors())
 
+//passport
+require('./config/passport')(passport)
+app.use(passport.initialize())
+app.use(passport.session())
+console.log("passport initialized")
+
 //Connecting MongoDB
 mongoose.connect(
-    db,{ useNewUrlParser: true, useUnifiedTopology: true }
+    db.database,{ useNewUrlParser: true, useUnifiedTopology: true }
 ).then(() => {
     error => {
         console.log('Could not connect to database: ' + error)
@@ -22,11 +28,17 @@ mongoose.connect(
 });
 console.log('db connected')
 
+//ping
+app.get('/ping', (req, res) => {
+    return res.send("OK")
+})
+
 //Express Route
 const postRoute = require('./routes/postRoute')
 const feedRoute = require('./routes/feedRoute')
 const commentRoute = require('./routes/commentRoute')
-const authRoute = require('./routes/authRoute' )
+const authRoute = require('./routes/authRoute' );
+const router = require('./routes/authRoute');
 
 app.use('/', feedRoute)
 app.use('/post', postRoute)
