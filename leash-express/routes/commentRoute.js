@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const router = express.Router();
 const cors = require('cors');
 const app = express()
+const verifyToken = require('../config/jwt')
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
@@ -13,7 +14,7 @@ app.use(express.static('public'));
 const CommentModel = require('../models/Comment');
 
 //route to create comment
-router.route('/createComment').post((req, res, next) => {
+router.route('/createComment').post(verifyToken,(req, res, next) => {
     const commentText = req.body.comment_text
     const postObjectId = req.body.post_id
     const comment = new CommentModel({

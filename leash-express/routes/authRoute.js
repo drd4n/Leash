@@ -1,10 +1,6 @@
 const express = require('express')
-const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-const path = require('path');
-const flash = require('connect-flash');
-const session = require('express-session');
-const passport = require('passport');
+const jwt = require('jsonwebtoken')
 const { check, body, validationResult } = require('express-validator')
 
 const router = express.Router()
@@ -90,7 +86,7 @@ router.route('/register').post(
                         console.log(err)
                         return
                     } else {
-                        return res.status(200).json({message: "You are now registered"})
+                        return res.status(201).json({message: "You are now registered"})
                     }
                 })
             })
@@ -98,16 +94,45 @@ router.route('/register').post(
     })
 
     //login
-    router.route('/login').post((req, res, next) => {
-        passport.authenticate('local',{ 
-            successRedirect: '/ping',
-            failureRedirect: '/auth/login' })
-            (req, res, next)
+    router.route('/login').post(async(req, res, next) => {
+        const username = req.body.username
+        const password = req.body.password
+        const user = await UserModel.findOne({username:username})
+        if(!user){
+            return res.status(400).json({errors: "This username is not exist"})
+        }
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if(err) return res.status(400).json({errors:"username or password invalid"})
+            if(isMatch){
+                const token = jwt.sign(
+                    {user_id: user._id},
+                    process.env.TOKEN_KEY,
+                    {
+                        expiresIn:"120000"
+                    }
+                )
+                user.token = token
+                user.save()
+                return res.status(200).json(user)
+            } else {
+                return res.status(400).json({errors:"username or password invalid"})
+            }
+        })
+        
+        // passport.authenticate('local',{ 
+        //     successRedirect: '/ping',
+        //     failureRedirect: '/auth/login' })
+        //     (req, res, next)
     })
 
     //get login failed message
     router.route('/login').get((req, res, next) => {
         return res.status(400).json({errors:"username or password not found"})
+    })
+
+    //isLoggin?
+    router.route('/isLoggedin').get((req,res,next) => {
+
     })
 
 module.exports = router;

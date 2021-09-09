@@ -8,6 +8,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const config = require('../config/s3config')
 const createError = require('http-errors')
+const verifyToken = require('../config/jwt')
 const app = express()
 
 app.use(express.json());
@@ -18,11 +19,13 @@ app.use(express.static('public'));
 
 //Post Models
 const PostModel = require('../models/Post');
+const UserModel = require('../models/User')
 
 //route createPost
-router.route('/createPost').post((req, res, next) => {
+router.route('/createPost').post(verifyToken,(req, res, next) => {
   const post_text = req.body.post_text
   const picture_link = req.body.picture_link
+  console.log(req.user)
   console.log("picture link array")
   console.log(picture_link)
   const post = new PostModel({

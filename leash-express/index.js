@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 var cors = require('cors');
 const createError = require('http-errors')
 const db = require('./config/db')
-const passport = require('passport')
 
 const app = express()
 
@@ -12,15 +11,9 @@ require("dotenv").config();
 app.use(express.json())
 app.use(cors())
 
-//passport
-require('./config/passport')(passport)
-app.use(passport.initialize())
-app.use(passport.session())
-console.log("passport initialized")
-
-//Connecting MongoDB
+//Connecting MongoDB 
 mongoose.connect(
-    db.database,{ useNewUrlParser: true, useUnifiedTopology: true }
+    db.database,{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true }
 ).then(() => {
     error => {
         console.log('Could not connect to database: ' + error)
@@ -38,7 +31,6 @@ const postRoute = require('./routes/postRoute')
 const feedRoute = require('./routes/feedRoute')
 const commentRoute = require('./routes/commentRoute')
 const authRoute = require('./routes/authRoute' );
-const router = require('./routes/authRoute');
 
 app.use('/', feedRoute)
 app.use('/post', postRoute)

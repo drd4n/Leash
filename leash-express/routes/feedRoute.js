@@ -17,7 +17,7 @@ const PostModel = require('../models/Post');
 //route to get all post
 router.route('/').get((req, res) => {
     PostModel.find((error, data) => {
-        if(error) return next(error)
+        if(error) return console.log(error)
         else {
             res.json(data)
         }

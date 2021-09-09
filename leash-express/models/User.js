@@ -11,7 +11,8 @@ const UserSchema = mongoose.Schema({
     },
     email: {
         type: String,
-        require: 'Email is required'
+        require: 'Email is required',
+        unique: true
     },
     dob: {
         type: Date,
@@ -19,11 +20,15 @@ const UserSchema = mongoose.Schema({
     },
     username: {
         type: String,
-        require: true
+        require: true,
+        unique: true
     },
     password: {
         type: String,
         require: true
+    },
+    token: {
+        type: String
     },
     interesting: {
         type: [String]
