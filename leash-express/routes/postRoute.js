@@ -22,15 +22,20 @@ const PostModel = require('../models/Post');
 const UserModel = require('../models/User')
 
 //route createPost
-router.route('/createPost').post(verifyToken,(req, res, next) => {
+router.route('/createPost').post(verifyToken,async(req, res, next) => {
   const post_text = req.body.post_text
   const picture_link = req.body.picture_link
-  console.log(req.user)
+  const user = await UserModel.findById(req.user._id)
   console.log("picture link array")
   console.log(picture_link)
   const post = new PostModel({
     post_text: post_text,
-    picture_link: picture_link
+    picture_link: picture_link,
+    owner: {
+      firstname:user.firstname,
+      lastname:user.lastname,
+      username:user.username
+    }
   })
 
   try {

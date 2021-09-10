@@ -10,6 +10,7 @@ app.use(express.urlencoded({ extended: false }))
 
 //User Models
 const UserModel = require('../models/User');
+const verifyToken = require('../config/jwt')
 
 //register
 router.route('/register').post(
@@ -105,7 +106,7 @@ router.route('/register').post(
             if(err) return res.status(400).json({errors:"username or password invalid"})
             if(isMatch){
                 const token = jwt.sign(
-                    {user_id: user._id},
+                    {_id: user._id},
                     process.env.TOKEN_KEY,
                     {
                         expiresIn:"120000"
@@ -130,9 +131,19 @@ router.route('/register').post(
         return res.status(400).json({errors:"username or password not found"})
     })
 
-    //isLoggin?
-    router.route('/isLoggedin').get((req,res,next) => {
-
+    //who am I
+    router.route('/whoAmI').get(verifyToken, async (req,res,next) => {
+        const user = await UserModel.findById(req.user._id)
+        const userData = {
+            _id:user._id,
+            firstname:user.firstname,
+            lastname:user.lastname,
+            email:user.email,
+            dob:user.dob,
+            username:user.username
+        }
+        console.log(userData)
+        return res.json(userData)
     })
 
 module.exports = router;

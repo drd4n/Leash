@@ -11,7 +11,7 @@ app.use(cors())
 app.use(express.static('public'));
 
 //Post Models
-const PostModel = require('../models/Post');
+const PostModel = require('../models/Post')
 
 
 //route to get all post
