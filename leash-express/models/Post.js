@@ -14,7 +14,7 @@ const PostSchema = mongoose.Schema({
     downvote: {
         type: [String]
     },
-    tag: {
+    tags: {
         type: [String]
     },
     owner: {

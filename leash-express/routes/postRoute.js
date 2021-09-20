@@ -20,6 +20,7 @@ app.use(express.static('public'));
 //Post Models
 const PostModel = require('../models/Post');
 const UserModel = require('../models/User')
+const InteractionModel = require('../models/Interaction')
 
 //route createPost
 router.route('/createPost').post(verifyToken,async(req, res, next) => {
@@ -32,18 +33,29 @@ router.route('/createPost').post(verifyToken,async(req, res, next) => {
     post_text: post_text,
     picture_link: picture_link,
     owner: {
+      user_id:user._id,
       firstname:user.firstname,
-      lastname:user.lastname,
-      username:user.username
+      lastname:user.lastname
     }
   })
 
   try {
-    post.save();
-    res.send("imported data")
+    const savedPost = await post.save();
+
+    const interaction = new InteractionModel({
+      user_id:user.user_id,
+      post_id:savedPost.post_id,
+      tags:savedPost.tags,
+      interaction_type:"post"
+    })
+
+    interaction.save()
+    return res.send("Post Successfully")
   } catch (error) {
     return next(error);
   }
+
+  
 })
 
 //aws config
@@ -80,7 +92,7 @@ function uploadToS3(req, res) {
 }
 
 //route and use the upload function
-router.route('/uploadImage').post((req, res, next) => {
+router.route('/uploadImage').post(verifyToken,(req, res, next) => {
   uploadToS3(req, res)
     .then(downloadUrl => {
 

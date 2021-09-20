@@ -9,12 +9,12 @@ const InteractionSchema = mongoose.Schema({
         type:String,
         require:true
     },
+    tags:{
+        type:[String]
+    },
     interaction_type:{
         type:String,
         require:true
-    },
-    tags:{
-        type:[String]
     }
 })
 

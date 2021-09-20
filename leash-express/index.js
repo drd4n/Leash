@@ -13,7 +13,7 @@ app.use(cors())
 
 //Connecting MongoDB 
 mongoose.connect(
-    db.database,{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true }
+    db.database,{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true, useFindAndModify:false }
 ).then(() => {
     error => {
         console.log('Could not connect to database: ' + error)
@@ -31,11 +31,13 @@ const postRoute = require('./routes/postRoute')
 const feedRoute = require('./routes/feedRoute')
 const commentRoute = require('./routes/commentRoute')
 const authRoute = require('./routes/authRoute' );
+const interactionRoute = require('./routes/interactionRoute');
 
 app.use('/', feedRoute)
 app.use('/post', postRoute)
 app.use('/comment', commentRoute)
 app.use('/auth', authRoute)
+app.use('/interaction',interactionRoute)
 
 //Port
 const port = process.env.PORT || 3001;

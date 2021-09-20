@@ -109,7 +109,7 @@ router.route('/register').post(
                     {_id: user._id},
                     process.env.TOKEN_KEY,
                     {
-                        expiresIn:"120000"
+                        expiresIn:"2d"
                     }
                 )
                 user.token = token
@@ -131,6 +131,16 @@ router.route('/register').post(
         return res.status(400).json({errors:"username or password not found"})
     })
 
+    router.route('/logout').post(verifyToken,async(req,res,next)=>{
+        try{
+            const user = await UserModel.findByIdAndUpdate(req.user._id,{$unset:{token:1}})
+            return res.status(200).json({message:"logged out"})
+        }catch{
+            return res.status(401).json({errors:"you are not loggedin"})
+        }
+        
+    })
+
     //who am I
     router.route('/whoAmI').get(verifyToken, async (req,res,next) => {
         const user = await UserModel.findById(req.user._id)
@@ -142,7 +152,19 @@ router.route('/register').post(
             dob:user.dob,
             username:user.username
         }
-        console.log(userData)
+        return res.json(userData)
+    })
+
+    router.route('/profile/:user_id').get(verifyToken, async (req,res,next)=> {
+        const user = await UserModel.findById(req.params.user_id)
+        const userData = {
+            _id:user._id,
+            firstname:user.firstname,
+            lastname:user.lastname,
+            email:user.email,
+            dob:user.dob,
+            username:user.username
+        }
         return res.json(userData)
     })
 
