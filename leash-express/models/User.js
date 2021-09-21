@@ -30,6 +30,9 @@ const UserSchema = mongoose.Schema({
     token: {
         type: String
     },
+    profile_picture: {
+        type:String
+    },
     veterinarian_file: {
         type: String
     },

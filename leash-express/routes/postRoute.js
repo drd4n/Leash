@@ -39,6 +39,10 @@ router.route('/createPost').post(verifyToken,async(req, res, next) => {
     }
   })
 
+  if(user.profile_picture){
+    post.owner.profile_picture = user.profile_picture
+  }
+
   try {
     const savedPost = await post.save();
 
