@@ -273,9 +273,14 @@ router.route('/whoAmI').get(verifyToken, async (req, res, next) => {
 })
 
 router.route('/profile/:user_id').get(verifyToken, async (req, res, next) => {
-    const user = await UserModel.findById(req.params.user_id)
+    try{
+        const user = await UserModel.findById(req.params.user_id)
+    }catch{
+        return res.status(400).json({errors:"This user is not exist"})
+    }
+    
     const userData = {
-        _id: user._id,
+        _id: req.params.user_id,
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
