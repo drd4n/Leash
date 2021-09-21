@@ -99,7 +99,7 @@ router.route(`/showProfileImage/:profile_picture`).get(verifyToken ,async(req, r
     const arrayOfLinks = req.params.profile_picture
 
         const params = {
-          Bucket: "leash-picture-posting",
+          Bucket: "leash-user",
           Key: arrayOfLinks
         }
         await s3.getObject(params).promise().then( (data) => {
@@ -275,19 +275,18 @@ router.route('/whoAmI').get(verifyToken, async (req, res, next) => {
 router.route('/profile/:user_id').get(verifyToken, async (req, res, next) => {
     try{
         const user = await UserModel.findById(req.params.user_id)
+        const userData = {
+            _id: req.params.user_id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            dob: user.dob,
+            username: user.username
+        }
+        return res.json(userData)
     }catch{
         return res.status(400).json({errors:"This user is not exist"})
     }
-    
-    const userData = {
-        _id: req.params.user_id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        dob: user.dob,
-        username: user.username
-    }
-    return res.json(userData)
 })
 
 module.exports = router;
