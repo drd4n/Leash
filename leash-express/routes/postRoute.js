@@ -26,12 +26,14 @@ const InteractionModel = require('../models/Interaction')
 router.route('/createPost').post(verifyToken,async(req, res, next) => {
   const post_text = req.body.post_text
   const picture_link = req.body.picture_link
+  const tags = req.body.tags
   const user = await UserModel.findById(req.user._id)
   console.log("picture link array")
   console.log(picture_link)
   const post = new PostModel({
     post_text: post_text,
     picture_link: picture_link,
+    tags:tags,
     owner: {
       user_id:user._id,
       firstname:user.firstname,
