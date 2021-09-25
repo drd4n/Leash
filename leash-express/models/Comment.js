@@ -5,12 +5,6 @@ const CommentSchema = mongoose.Schema({
         type: String,
         require: true
     },
-    upvote: {
-        type: [String]
-    },
-    downvote: {
-        type: [String]
-    },
     owner: {
         type: Object,
         require: true

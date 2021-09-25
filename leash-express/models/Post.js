@@ -8,12 +8,6 @@ const PostSchema = mongoose.Schema({
     picture_link: {
         type: [String]
     },
-    upvote: {
-        type: [String]
-    },
-    downvote: {
-        type: [String]
-    },
     tags: {
         type: [String]
     },
