@@ -26,6 +26,7 @@ router.route('/createComment').post(verifyToken,async(req, res, next) => {
         comment_text: commentText,
         post_id: postObjectId,
         owner:{
+            user_id:user._id,
             firstname:user.firstname,
             lastname:user.lastname
         }
