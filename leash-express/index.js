@@ -1,16 +1,19 @@
 const express = require('express')
 const mongoose = require('mongoose')
 var cors = require('cors');
+const createError = require('http-errors')
+const db = require('./config/db')
+
 const app = express()
 
-const db = "mongodb+srv://leashposts:leashmasterposts@leash.t5u93.mongodb.net/Leash?retryWrites=true&w=majority";
+require("dotenv").config();
 
 app.use(express.json())
 app.use(cors())
 
-//Connecting MongoDB
+//Connecting MongoDB 
 mongoose.connect(
-    db,{ useNewUrlParser: true, useUnifiedTopology: true }
+    db.database,{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true, useFindAndModify:false }
 ).then(() => {
     error => {
         console.log('Could not connect to database: ' + error)
@@ -18,16 +21,27 @@ mongoose.connect(
 });
 console.log('db connected')
 
-//Express Route
-const postRoute = require('./routes/postRoute');
-const feedRoute = require('./routes/feedRoute')
+//ping
+app.get('/ping', (req, res) => {
+    return res.send("OK")
+})
 
+//Express Route
+const postRoute = require('./routes/postRoute')
+const feedRoute = require('./routes/feedRoute')
+const commentRoute = require('./routes/commentRoute')
+const authRoute = require('./routes/authRoute' );
+const interactionRoute = require('./routes/interactionRoute');
+
+app.use('/', feedRoute)
 app.use('/post', postRoute)
-app.use('/feed', feedRoute)
+app.use('/comment', commentRoute)
+app.use('/auth', authRoute)
+app.use('/interaction',interactionRoute)
 
 //Port
-const port = process.env.port || 3001;
-app.listen(port, () => {
+const port = process.env.PORT || 3001;
+app.listen(process.env.PORT || 3001, () => {
     console.log('Yark Ja Norn on port ' + port)
 });
  

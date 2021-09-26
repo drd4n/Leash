@@ -8,6 +8,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const config = require('../config/s3config')
 const createError = require('http-errors')
+const verifyToken = require('../config/jwt')
 const app = express()
 
 app.use(express.json());
@@ -18,26 +19,51 @@ app.use(express.static('public'));
 
 //Post Models
 const PostModel = require('../models/Post');
+const UserModel = require('../models/User')
+const InteractionModel = require('../models/Interaction')
 
 //route createPost
-router.route('/createPost').post((req, res, next) => {
+router.route('/createPost').post(verifyToken,async(req, res, next) => {
   const post_text = req.body.post_text
   const picture_link = req.body.picture_link
+  const tags = req.body.tags
+  const user = await UserModel.findById(req.user._id)
   console.log("picture link array")
   console.log(picture_link)
   const post = new PostModel({
     post_text: post_text,
-    picture_link: picture_link
+    picture_link: picture_link,
+    tags:tags,
+    owner: {
+      user_id:user._id,
+      firstname:user.firstname,
+      lastname:user.lastname
+    }
   })
 
+  if(user.profile_picture){
+    console.log(user.profile_picture)
+    post.owner.profile_picture = user.profile_picture
+  }
+
   try {
-    post.save();
-    res.send("imported data")
+    const savedPost = await post.save();
+
+    const interaction = new InteractionModel({
+      user_id:user.user_id,
+      post_id:savedPost.post_id,
+      tags:savedPost.tags,
+      interaction_type:"post"
+    })
+
+    interaction.save()
+    return res.send("Post Successfully")
   } catch (error) {
     return next(error);
   }
-})
 
+  
+})
 
 //aws config
 aws.config.update(config.credentials)
@@ -57,7 +83,6 @@ var uploadPicture = multer({
   })
 })
 
-
 //define function upload to s3
 const singleFileUpload = uploadPicture.single('image');
 
@@ -73,54 +98,76 @@ function uploadToS3(req, res) {
   })
 }
 
-//function to get s3 obj and turn object into src pattern
-function getS3Image(s3Key) {
-  console.log(s3Key)
-  const params = {
-    Bucket: "leash-picture-posting",
-    Key: s3Key
-  }
-  s3.getObject(params, function (err, data) {
-    if (err) console.log(err)
-    console.log(data)
-    const b64 = Buffer.from(data.Body).toString('base64');
-    const mimeType = 'image/jpg';
-    return `data:${mimeType};base64,${b64}`
-  }
-  )
-}
-
 //route and use the upload function
-router.route('/uploadImage').post((req, res, next) => {
+router.route('/uploadImage').post(verifyToken,(req, res, next) => {
   uploadToS3(req, res)
     .then(downloadUrl => {
 
       //get object to show and res to front end
-      const src = getS3Image(downloadUrl)
-      return res.json({
-        src: src,
-        picture_link: downloadUrl
+      const params = {
+        Bucket: "leash-picture-posting",
+        Key: downloadUrl
+      }
+
+      s3.getObject(params, function (err, data) {
+        if (err) console.log(err)
+        console.log(data)
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'image/jpg';
+        return res.json({
+          src: `data:${mimeType};base64,${b64}`,
+          picture_link: downloadUrl
+        });
       })
     })
     .catch(e => {
       next(e)
     })
-
 })
 
+async function getMultipleImages(arrayOfLinks) {
+
+  for (let index = 0; index < arrayOfLinks.length; index++) {
+
+    //get object to show and res to front end
+    const arrayOfSrc = []
+    const params = {
+      Bucket: "leash-picture-posting",
+      Key: arrayOfLinks[index]
+    }
+
+    s3.getObject(params, function (err, data) {
+      if (err) console.log(err)
+      console.log(data)
+      const b64 = Buffer.from(data.Body).toString('base64');
+      const mimeType = 'image/jpg';
+      arrayOfSrc.push(`data:${mimeType};base64,${b64}`)
+    })
+  }
+}
+
 //route to request all images of 1 post
-router.route(`/showPostImage`).get((req, res, next) => {
+router.route(`/showPostImage`).post(async(req, res, next) => {
   const arrayOfLinks = req.body.picture_link
   const arrayOfSrc = []
-  try {
-    arrayOfLinks.map((s3key) => {
-    const oneSrc = getS3Image(s3key)
-    arrayOfSrc.push(oneSrc)
-  })
-  }catch(error) {
-    return next(error)
+  if (Array.isArray(arrayOfLinks)) {
+    for (let index = 0; index < arrayOfLinks.length; index++) {
+      //get object to show and res to front end
+      const params = {
+        Bucket: "leash-picture-posting",
+        Key: arrayOfLinks[index]
+      }
+      await s3.getObject(params).promise().then( (data) => {
+        console.log(data)
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'image/jpg';
+        arrayOfSrc.push(`data:${mimeType};base64,${b64}`)
+      }).catch(e => {
+        console.log(e)
+      })
+    }
+      return res.json({ src: arrayOfSrc })
   }
-  return res.json({ src: arrayOfSrc })
 })
 
 //route to remove selected image from pre-post

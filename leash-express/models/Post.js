@@ -8,19 +8,13 @@ const PostSchema = mongoose.Schema({
     picture_link: {
         type: [String]
     },
-    upvote: {
-        type: [mongoose.Types._ObjectId]
-    },
-    downvote: {
-        type: [mongoose.Types._ObjectId]
-    },
-    tag: {
+    tags: {
         type: [String]
     },
-    // user_id: {
-    //     type: mongoose.Types._ObjectId
-    //     //require: true
-    // }
+    owner: {
+        type: Object
+        //require: true
+    }
 }, 
     {
     collection : "posts"
