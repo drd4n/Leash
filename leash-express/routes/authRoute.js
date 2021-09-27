@@ -269,6 +269,10 @@ router.route('/whoAmI').get(verifyToken, async (req, res, next) => {
         dob: user.dob,
         username: user.username
     }
+
+    if(user.profile_picture){
+        userData.profile_picture = user.profile_picture
+    }
     return res.json(userData)
 })
 
@@ -282,6 +286,9 @@ router.route('/profile/:user_id').get(verifyToken, async (req, res, next) => {
             email: user.email,
             dob: user.dob,
             username: user.username
+        }
+        if(user.profile_picture){
+            userData.profile_picture = user.profile_picture
         }
         return res.json(userData)
     }catch{
