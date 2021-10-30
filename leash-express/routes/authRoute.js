@@ -17,7 +17,9 @@ app.use(express.urlencoded({ extended: false }))
 
 //User Models
 const UserModel = require('../models/User');
+const AdminModel = require('../models/Admin')
 const verifyToken = require('../config/jwt');
+const verifyAdmin = require('../config/adminVerify')
 const s3config = require('../config/s3config');
 
 aws.config.update(s3config.credentials)
@@ -236,11 +238,44 @@ router.route('/login').post(async (req, res, next) => {
             return res.status(400).json({ errors: "username or password invalid" })
         }
     })
+})
 
-    // passport.authenticate('local',{ 
-    //     successRedirect: '/ping',
-    //     failureRedirect: '/auth/login' })
-    //     (req, res, next)
+//admin login
+router.route('/admin').post(async(req, res, next) => {
+    const username = req.body.username
+    const password = req.body.password
+    const admin = await AdminModel.findOne({ username: username })
+    if (!admin) {
+        return res.status(400).json({ errors: "This username is not exist" })
+    }
+    bcrypt.compare(password, admin.password, (err, isMatch) => {
+        if (err) return res.status(400).json({ errors: "username or password invalid" })
+        if (isMatch) {
+            const token = jwt.sign(
+                { _id: admin._id },
+                process.env.ADMIN_KEY,
+                {
+                    expiresIn: "2d"
+                }
+            )
+            admin.admin_token = token
+            admin.save()
+            return res.status(200).json(admin)
+        } else {
+            return res.status(400).json({ errors: "username or password invalid" })
+        }
+    })
+})
+
+//admin logout
+router.route('/adminLogout').post(verifyAdmin, async (req, res, next) => {
+    try {
+        const admin = await AdminModel.findByIdAndUpdate(req.user._id, { $unset: { token: 1 } })
+        return res.status(200).json({ message: "logged out" })
+    } catch {
+        return res.status(401).json({ errors: "you are not loggedin" })
+    }
+
 })
 
 //get login failed message

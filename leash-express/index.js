@@ -32,12 +32,14 @@ const feedRoute = require('./routes/feedRoute')
 const commentRoute = require('./routes/commentRoute')
 const authRoute = require('./routes/authRoute' );
 const interactionRoute = require('./routes/interactionRoute');
+const requestRoute = require('./routes/requestRoute')
 
 app.use('/', feedRoute)
 app.use('/post', postRoute)
 app.use('/comment', commentRoute)
 app.use('/auth', authRoute)
 app.use('/interaction',interactionRoute)
+app.use('/request', requestRoute)
 
 //Port
 const port = process.env.PORT || 3001;
