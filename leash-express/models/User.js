@@ -36,6 +36,9 @@ const UserSchema = mongoose.Schema({
     veterinarian_file: {
         type: String
     },
+    verify_picture: {
+        type: String
+    },
     admin_approval: {
         type: String
     }

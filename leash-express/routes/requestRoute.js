@@ -25,7 +25,7 @@ aws.config.update(s3config.credentials)
 const s3 = new aws.S3()
 
 //setup where to upload piture to, before route
-var uploadPicture = multer({
+var uploadFile = multer({
     storage: multerS3({
         s3,
         bucket: 'leash-file',
@@ -38,10 +38,35 @@ var uploadPicture = multer({
     })
 })
 
-//define function upload to s3
-const singleFileUpload = uploadPicture.single('image');
+var uploadPicture = multer({
+    storage: multerS3({
+        s3,
+        bucket: 'leash-picture-request',
+        metadata: function (req, file, cb) {
+            cb(null, { fieldName: file.fieldname });
+        },
+        key: function (req, file, cb) {
+            cb(null, req.s3Key)
+        }
+    })
+})
 
-function uploadToS3(req, res) {
+//define function upload to s3
+const singlePictureUpload = uploadPicture.single('image')
+const singleFileUpload = uploadFile.single('file')
+
+function uploadPictureToS3(req, res) {
+    req.s3Key = uuidv4();
+    let downloadUrl = `${req.s3Key}`
+    return new Promise((reslove, reject) => {
+        return singlePictureUpload(req, res, err => {
+            if (err) return reject(err);
+            return reslove(downloadUrl)
+        })
+    })
+}
+
+function uploadFileToS3(req, res) {
     req.s3Key = uuidv4();
     let downloadUrl = `${req.s3Key}`
     return new Promise((reslove, reject) => {
@@ -54,7 +79,7 @@ function uploadToS3(req, res) {
 
 //upload request file
 router.route('/uploadFile').post(verifyToken, (req, res, next) => {
-    uploadToS3(req, res)
+    uploadFileToS3(req, res)
         .then(downloadUrl => {
 
             //get object to show and res to front end
@@ -79,12 +104,39 @@ router.route('/uploadFile').post(verifyToken, (req, res, next) => {
         })
 })
 
+//upload request picture
+router.route('/uploadVerifyPicture').post(verifyToken, (req, res, next) => {
+    uploadPictureToS3(req, res)
+        .then(downloadUrl => {
+
+            //get object to show and res to front end
+            const params = {
+                Bucket: "leash-picture-request",
+                Key: downloadUrl
+            }
+
+            s3.getObject(params, function (err, data) {
+                if (err) console.log(err)
+                console.log("data"+data)
+                const b64 = Buffer.from(data.Body).toString('base64');
+                const mimeType = 'image/jpg';
+                return res.json({
+                    src: `data:${mimeType};base64,${b64}`,
+                    verify_picture: downloadUrl
+                });
+            })
+        })
+        .catch(e => {
+            next(e)
+        })
+})
+
 //route to remove selected request file from prepare stage
-router.route(`/removeSelectedFile/:s3key`).post((req, res, next) => {
+router.route(`/removeSelectedFile`).post(verifyToken, (req, res, next) => {
 
     const params = {
         Bucket: "leash-file",
-        Key: req.params.s3key
+        Key: req.body.s3key
     }
 
     s3.deleteObject(params, function (err, data) {
@@ -93,6 +145,38 @@ router.route(`/removeSelectedFile/:s3key`).post((req, res, next) => {
             return res.send("successfully delete")
         }
     })
+})
+
+//route to remove selected request file from prepare stage
+router.route(`/removeSelectedPicture`).post(verifyToken, (req, res, next) => {
+
+    const params = {
+        Bucket: "leash-picture-request",
+        Key: req.body.s3key
+    }
+
+    s3.deleteObject(params, function (err, data) {
+        if (err) return console.log(err)
+        else {
+            return res.send("successfully delete")
+        }
+    })
+})
+
+//save all verify data
+router.route(`/submit`).post(verifyToken, async(req,res,next) => {
+    await UserModel.findOneAndUpdate(req.body.filter,req.body.update)
+    return res.send("successfully submit")
+})
+
+router.route(`/check`).get(verifyToken, async(req,res,next) => {
+    const user = await UserModel.findById(req.user._id)
+
+    if(user.veterinarian_file && user.verify_picture){
+        return res.json({message:"sent"})
+    }
+
+    return res.json({message:"go"})
 })
 
 //route to show request file image
