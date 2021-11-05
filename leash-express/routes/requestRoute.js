@@ -90,7 +90,7 @@ router.route('/uploadFile').post(verifyToken, (req, res, next) => {
 
             s3.getObject(params, function (err, data) {
                 if (err) console.log(err)
-                console.log("data"+data)
+                console.log("data" + data)
                 const b64 = Buffer.from(data.Body).toString('base64');
                 const mimeType = 'application/pdf';
                 return res.json({
@@ -117,7 +117,7 @@ router.route('/uploadVerifyPicture').post(verifyToken, (req, res, next) => {
 
             s3.getObject(params, function (err, data) {
                 if (err) console.log(err)
-                console.log("data"+data)
+                console.log("data" + data)
                 const b64 = Buffer.from(data.Body).toString('base64');
                 const mimeType = 'image/jpg';
                 return res.json({
@@ -164,36 +164,92 @@ router.route(`/removeSelectedPicture`).post(verifyToken, (req, res, next) => {
 })
 
 //save all verify data
-router.route(`/submit`).post(verifyToken, async(req,res,next) => {
-    await UserModel.findOneAndUpdate(req.body.filter,req.body.update)
+router.route(`/submit`).post(verifyToken, async (req, res, next) => {
+    await UserModel.findOneAndUpdate(req.body.filter, req.body.update)
     return res.send("successfully submit")
 })
 
-router.route(`/check`).get(verifyToken, async(req,res,next) => {
+router.route(`/check`).get(verifyToken, async (req, res, next) => {
     const user = await UserModel.findById(req.user._id)
 
-    if(user.veterinarian_file && user.verify_picture){
-        return res.json({message:"sent"})
+    if (user.veterinarian_file && user.verify_picture) {
+        return res.json({ message: "sent" })
     }
 
-    return res.json({message:"go"})
+    return res.json({ message: "go" })
+})
+
+//route to show all request in text
+router.route(`/allRequests`).get(verifyAdmin, async (req, res, next) => {
+    const requests = await UserModel.find().where("veterinarian_file").ne(null)
+    return res.json(requests)
 })
 
 //route to show request file image
-router.route(`/showFile/:file`).get(verifyAdmin ,async(req, res, next) => {
+router.route(`/showFile/:file`).get(verifyAdmin, async (req, res, next) => {
     const arrayOfLinks = req.params.file
 
-        const params = {
-          Bucket: "leash-file",
-          Key: arrayOfLinks
-        }
-        await s3.getObject(params).promise().then( (data) => {
-          const b64 = Buffer.from(data.Body).toString('base64');
-          const mimeType = 'application/pdf';
-          return res.json({veterinarian_file:`data:${mimeType};base64,${b64}`})
-        }).catch(e => {
-          console.log(e)
-        })
-  })
+    const params = {
+        Bucket: "leash-file",
+        Key: arrayOfLinks
+    }
+    await s3.getObject(params).promise().then((data) => {
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'application/pdf';
+        return res.json({ veterinarian_file: `data:${mimeType};base64,${b64}` })
+    }).catch(e => {
+        console.log(e)
+    })
+})
+
+//route to show request verify image
+router.route(`/showVerifyPicture/:file`).get(verifyAdmin, async (req, res, next) => {
+    const arrayOfLinks = req.params.file
+
+    const params = {
+        Bucket: "leash-picture-request",
+        Key: arrayOfLinks
+    }
+    await s3.getObject(params).promise().then((data) => {
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'image/jpg';
+        return res.json({ verify_picture: `data:${mimeType};base64,${b64}` })
+    }).catch(e => {
+        console.log(e)
+    })
+})
+
+//route to request profile image for ADMIN
+router.route(`/showProfileImage/:profile_picture`).get(verifyAdmin, async (req, res, next) => {
+    const arrayOfLinks = req.params.profile_picture
+
+    const params = {
+        Bucket: "leash-user",
+        Key: arrayOfLinks
+    }
+    await s3.getObject(params).promise().then((data) => {
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'image/jpg';
+        return res.json({ profile_src: `data:${mimeType};base64,${b64}` })
+    }).catch(e => {
+        console.log(e)
+    })
+})
+
+//store admin username and fullname
+router.route('/approve').post(verifyAdmin, async (req, res, next) => {
+    const update = {admin_approval:{username:req.admin.username ,admin_fullname:req.admin.admin_fullname}}
+    await UserModel.findByIdAndUpdate(req.body.user_id, update)
+    .catch(e => {
+        console.log(e)
+    })
+    return res.json({message:"approved"})
+
+})
+
+//delete file and verify_picture both on s3 and mongo
+router.route('/reject').post(verifyAdmin, async (req, res, next) => {
+
+})
 
 module.exports = router;
