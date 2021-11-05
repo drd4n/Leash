@@ -40,7 +40,7 @@ const UserSchema = mongoose.Schema({
         type: String
     },
     admin_approval: {
-        type: String
+        type: Object
     }
 }, 
     {
