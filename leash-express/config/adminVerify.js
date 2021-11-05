@@ -10,7 +10,7 @@ const verifyAdmin = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, config.ADMIN_KEY)
-        req.user = decoded
+        req.admin = decoded
     } catch(err) {
         return res.status(401).json({errors:"Invalid Token"})
     }

@@ -96,7 +96,7 @@ router.route(`/removeSelectedImage/:s3key`).post((req, res, next) => {
     })
 })
 
-//route to request profile image
+//route to request profile image for user
 router.route(`/showProfileImage/:profile_picture`).get(verifyToken ,async(req, res, next) => {
     const arrayOfLinks = req.params.profile_picture
 
@@ -252,7 +252,7 @@ router.route('/admin').post(async(req, res, next) => {
         if (err) return res.status(400).json({ errors: "username or password invalid" })
         if (isMatch) {
             const token = jwt.sign(
-                { _id: admin._id },
+                { username: admin.username, admin_fullname: admin.admin_fullname },
                 process.env.ADMIN_KEY,
                 {
                     expiresIn: "2d"
