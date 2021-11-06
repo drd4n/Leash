@@ -238,18 +238,57 @@ router.route(`/showProfileImage/:profile_picture`).get(verifyAdmin, async (req, 
 
 //store admin username and fullname
 router.route('/approve').post(verifyAdmin, async (req, res, next) => {
-    const update = {admin_approval:{username:req.admin.username ,admin_fullname:req.admin.admin_fullname}}
+    const update = { admin_approval: { username: req.admin.username, admin_fullname: req.admin.admin_fullname } }
     await UserModel.findByIdAndUpdate(req.body.user_id, update)
-    .catch(e => {
-        console.log(e)
-    })
-    return res.json({message:"approved"})
+        .catch(e => {
+            console.log(e)
+        })
+    return res.json({ message: "approved" })
 
 })
 
 //delete file and verify_picture both on s3 and mongo
 router.route('/reject').post(verifyAdmin, async (req, res, next) => {
 
+    const fileParams = {
+        Bucket: "leash-file",
+        Key: req.body.veterinarian_file
+    }
+
+    const pictureParams = {
+        Bucket: "leash-picture-request",
+        Key: req.body.verify_picture
+    }
+
+    s3.deleteObject(fileParams, function (err, data) {
+        if (err) return console.log(err)
+        else {
+            s3.deleteObject(pictureParams, function (err, data) {
+                if (err) return console.log(err)
+                else {
+                    const update = { $unset: { veterinarian_file: 1, verify_picture: 1 } }
+                    UserModel.findByIdAndUpdate(req.body.user_id, update)
+                        .catch(e => {
+                            console.log(e)
+                        })
+                        return res.json("rejected")
+                }
+            }
+            )
+        }
+    }
+    )
+}
+)
+
+
+//delete only admin approval
+router.route('/revoke').post(verifyAdmin, async (req, res, next) => {
+    await UserModel.findByIdAndUpdate(req.body.user_id, { $unset: { admin_approval: 1 } })
+        .catch(e => {
+            console.log(e)
+        })
+    return res.json({ message: "revoked" })
 })
 
 module.exports = router;
