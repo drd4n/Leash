@@ -266,7 +266,7 @@ router.route('/reject').post(verifyAdmin, async (req, res, next) => {
             s3.deleteObject(pictureParams, function (err, data) {
                 if (err) return console.log(err)
                 else {
-                    const update = { $unset: { veterinarian_file: 1, verify_picture: 1 } }
+                    const update = { $unset: { veterinarian_file: 1, verify_picture: 1, admin_approval: 1 } }
                     UserModel.findByIdAndUpdate(req.body.user_id, update)
                         .catch(e => {
                             console.log(e)
