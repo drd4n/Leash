@@ -1,10 +1,6 @@
 const mongoose = require('mongoose')
 
 const OwnerSchema = mongoose.Schema({
-    user_id: {
-        type: String,
-        require: true
-    },
     firstname: {
         type: String,
         require: true
@@ -31,6 +27,9 @@ const PostSchema = mongoose.Schema({
     },
     tags: {
         type: [String]
+    },
+    owner_id: {
+        type: String
     },
     owner: {
         type: OwnerSchema

@@ -34,8 +34,8 @@ router.route('/createPost').post(verifyToken,async(req, res, next) => {
     post_text: post_text,
     picture_link: picture_link,
     tags:tags,
+    owner_id:user._id,
     owner: {
-      _id:user._id,
       firstname:user.firstname,
       lastname:user.lastname
     }
