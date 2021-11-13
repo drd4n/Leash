@@ -245,8 +245,8 @@ router.route('/approve').post(verifyAdmin, async (req, res, next) => {
             console.log(e)
         })
 
-    const postQuery = {'owner.user_id': req.body.user_id }
-    const postUpdate = {owner:{approval_status: "approved"}}
+    const postQuery = {'owner._id': req.body.user_id }
+    const postUpdate = {"owner.approval_status": "approved"}
     await PostModel.updateMany(postQuery,postUpdate)
         .catch(e => {
             console.log(e)
