@@ -1,5 +1,26 @@
 const mongoose = require('mongoose')
 
+const OwnerSchema = mongoose.Schema({
+    _id: {
+        type: String,
+        require: true
+    },
+    firstname: {
+        type: String,
+        require: true
+    },
+    lastname: {
+        type: String,
+        require: true
+    },
+    profile_picture: {
+        type: String
+    },
+    approval_status:{
+        type: String
+    }
+})
+
 const PostSchema = mongoose.Schema({
     post_text: {
         type: String,
@@ -12,12 +33,11 @@ const PostSchema = mongoose.Schema({
         type: [String]
     },
     owner: {
-        type: Object
-        //require: true
+        type: OwnerSchema
     }
-}, 
+},
     {
-    collection : "posts"
+        collection: "posts"
     }
 );
 

@@ -239,12 +239,13 @@ router.route(`/showProfileImage/:profile_picture`).get(verifyAdmin, async (req, 
 //store admin username and fullname
 router.route('/approve').post(verifyAdmin, async (req, res, next) => {
     const update = { admin_approval: { username: req.admin.username, admin_fullname: req.admin.admin_fullname }, approval_status: "approved" }
+    
     await UserModel.findByIdAndUpdate(req.body.user_id, update)
         .catch(e => {
             console.log(e)
         })
 
-    const postQuery = {owner:{user_id:req.body.user_id}}
+    const postQuery = {'owner._id': req.body.user_id }
     const postUpdate = {owner:{approval_status: "approved"}}
     await PostModel.updateMany(postQuery,postUpdate)
         .catch(e => {
