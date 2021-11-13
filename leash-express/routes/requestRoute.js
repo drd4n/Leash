@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: false }))
 
 //User Models
 const UserModel = require('../models/User');
-const AdminModel = require('../models/Admin')
+const PostModel = require('../models/Post')
 const verifyToken = require('../config/jwt');
 const verifyAdmin = require('../config/adminVerify')
 const s3config = require('../config/s3config');
@@ -240,6 +240,13 @@ router.route(`/showProfileImage/:profile_picture`).get(verifyAdmin, async (req, 
 router.route('/approve').post(verifyAdmin, async (req, res, next) => {
     const update = { admin_approval: { username: req.admin.username, admin_fullname: req.admin.admin_fullname }, approval_status: "approved" }
     await UserModel.findByIdAndUpdate(req.body.user_id, update)
+        .catch(e => {
+            console.log(e)
+        })
+
+    const postQuery = {owner:{user_id:req.body.user_id}}
+    const postUpdate = {owner:{approval_status: "approved"}}
+    await PostModel.updateMany(postQuery,postUpdate)
         .catch(e => {
             console.log(e)
         })
