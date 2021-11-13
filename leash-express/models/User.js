@@ -39,6 +39,9 @@ const UserSchema = mongoose.Schema({
     verify_picture: {
         type: String
     },
+    approval_status:{
+        type: String
+    },
     admin_approval: {
         type: Object
     }

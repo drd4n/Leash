@@ -296,19 +296,7 @@ router.route('/logout').post(verifyToken, async (req, res, next) => {
 //who am I
 router.route('/whoAmI').get(verifyToken, async (req, res, next) => {
     const user = await UserModel.findById(req.user._id)
-    const userData = {
-        _id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        dob: user.dob,
-        username: user.username
-    }
-
-    if(user.profile_picture){
-        userData.profile_picture = user.profile_picture
-    }
-    return res.json(userData)
+    return res.json(user)
 })
 
 router.route('/profile/:user_id').get(verifyToken, async (req, res, next) => {
@@ -325,6 +313,11 @@ router.route('/profile/:user_id').get(verifyToken, async (req, res, next) => {
         if(user.profile_picture){
             userData.profile_picture = user.profile_picture
         }
+
+        if(user.approval_status){
+            userData.approval_status = user.approval_status
+        }
+
         return res.json(userData)
     }catch{
         return res.status(400).json({errors:"This user is not exist"})

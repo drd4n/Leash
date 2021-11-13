@@ -42,8 +42,11 @@ router.route('/createPost').post(verifyToken,async(req, res, next) => {
   })
 
   if(user.profile_picture){
-    console.log(user.profile_picture)
     post.owner.profile_picture = user.profile_picture
+  }
+
+  if(user.approval_status){
+    post.owner.approval_status = user.approval_status
   }
 
   try {

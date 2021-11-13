@@ -166,13 +166,13 @@ router.route(`/removeSelectedPicture`).post(verifyToken, (req, res, next) => {
 //save all verify data
 router.route(`/submit`).post(verifyToken, async (req, res, next) => {
     await UserModel.findOneAndUpdate(req.body.filter, req.body.update)
-    return res.send("successfully submit")
+    return res.json({ message: "successfully submit" })
 })
 
 router.route(`/check`).get(verifyToken, async (req, res, next) => {
     const user = await UserModel.findById(req.user._id)
 
-    if (user.veterinarian_file && user.verify_picture) {
+    if (user.approval_status === "approved") {
         return res.json({ message: "sent" })
     }
 
@@ -238,7 +238,7 @@ router.route(`/showProfileImage/:profile_picture`).get(verifyAdmin, async (req, 
 
 //store admin username and fullname
 router.route('/approve').post(verifyAdmin, async (req, res, next) => {
-    const update = { admin_approval: { username: req.admin.username, admin_fullname: req.admin.admin_fullname } }
+    const update = { admin_approval: { username: req.admin.username, admin_fullname: req.admin.admin_fullname }, approval_status: "approved" }
     await UserModel.findByIdAndUpdate(req.body.user_id, update)
         .catch(e => {
             console.log(e)
@@ -262,33 +262,85 @@ router.route('/reject').post(verifyAdmin, async (req, res, next) => {
 
     s3.deleteObject(fileParams, function (err, data) {
         if (err) return console.log(err)
-        else {
-            s3.deleteObject(pictureParams, function (err, data) {
-                if (err) return console.log(err)
-                else {
-                    const update = { $unset: { veterinarian_file: 1, verify_picture: 1, admin_approval: 1 } }
-                    UserModel.findByIdAndUpdate(req.body.user_id, update)
-                        .catch(e => {
-                            console.log(e)
-                        })
-                        return res.json("rejected")
-                }
-            }
-            )
-        }
-    }
-    )
+    })
+
+    s3.deleteObject(pictureParams, function (err, data) {
+        if (err) return console.log(err)
+    })
+
+    const update = { $unset: { veterinarian_file: 1, verify_picture: 1, admin_approval: 1 }, approval_status: "rejected" }
+    await UserModel.findByIdAndUpdate(req.body.user_id, update)
+        .catch(e => {
+            console.log(e)
+        })
+    return res.json({ message: "rejected" })
+
 }
 )
 
 
-//delete only admin approval
-router.route('/revoke').post(verifyAdmin, async (req, res, next) => {
-    await UserModel.findByIdAndUpdate(req.body.user_id, { $unset: { admin_approval: 1 } })
+router.route('/cancel').post(verifyToken, async (req, res, next) => {
+
+    const fileParams = {
+        Bucket: "leash-file",
+        Key: req.body.veterinarian_file
+    }
+
+    const pictureParams = {
+        Bucket: "leash-picture-request",
+        Key: req.body.verify_picture
+    }
+
+    s3.deleteObject(fileParams, async function (err, data) {
+        if (err) return console.log(err)
+    })
+
+    s3.deleteObject(pictureParams, function (err, data) {
+        if (err) return console.log(err)
+    })
+
+    const update = { $unset: { veterinarian_file: 1, verify_picture: 1, admin_approval: 1, approval_status: 1 } }
+    await UserModel.findByIdAndUpdate(req.user._id, update)
         .catch(e => {
             console.log(e)
         })
-    return res.json({ message: "revoked" })
+    return res.json({ message: "canceled" })
+
+}
+)
+
+//route to show request file image
+router.route(`/showPendingFile/:file`).get(verifyToken, async (req, res, next) => {
+    const arrayOfLinks = req.params.file
+
+    const params = {
+        Bucket: "leash-file",
+        Key: arrayOfLinks
+    }
+    await s3.getObject(params).promise().then((data) => {
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'application/pdf';
+        return res.json({ veterinarian_file: `data:${mimeType};base64,${b64}` })
+    }).catch(e => {
+        console.log(e)
+    })
+})
+
+//route to show request verify image
+router.route(`/showPendingVerifyPicture/:file`).get(verifyToken, async (req, res, next) => {
+    const arrayOfLinks = req.params.file
+
+    const params = {
+        Bucket: "leash-picture-request",
+        Key: arrayOfLinks
+    }
+    await s3.getObject(params).promise().then((data) => {
+        const b64 = Buffer.from(data.Body).toString('base64');
+        const mimeType = 'image/jpg';
+        return res.json({ verify_picture: `data:${mimeType};base64,${b64}` })
+    }).catch(e => {
+        console.log(e)
+    })
 })
 
 module.exports = router;
