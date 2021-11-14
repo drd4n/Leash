@@ -239,15 +239,15 @@ router.route(`/showProfileImage/:profile_picture`).get(verifyAdmin, async (req, 
 //store admin username and fullname
 router.route('/approve').post(verifyAdmin, async (req, res, next) => {
     const update = { admin_approval: { username: req.admin.username, admin_fullname: req.admin.admin_fullname }, approval_status: "approved" }
-    
+
     await UserModel.findByIdAndUpdate(req.body.user_id, update)
         .catch(e => {
             console.log(e)
         })
 
-    const postQuery = {'owner_id': req.body.user_id }
-    const postUpdate = {"owner.approval_status": "approved"}
-    await PostModel.updateMany(postQuery,postUpdate)
+    const postQuery = { 'owner_id': req.body.user_id }
+    const postUpdate = { "owner.approval_status": "approved" }
+    await PostModel.updateMany(postQuery, postUpdate)
         .catch(e => {
             console.log(e)
         })
@@ -278,6 +278,13 @@ router.route('/reject').post(verifyAdmin, async (req, res, next) => {
 
     const update = { $unset: { veterinarian_file: 1, verify_picture: 1, admin_approval: 1 }, approval_status: "rejected" }
     await UserModel.findByIdAndUpdate(req.body.user_id, update)
+        .catch(e => {
+            console.log(e)
+        })
+
+    const postQuery = { 'owner_id': req.body.user_id }
+    const postUpdate = { "owner.approval_status": "rejected" }
+    await PostModel.updateMany(postQuery, postUpdate)
         .catch(e => {
             console.log(e)
         })
