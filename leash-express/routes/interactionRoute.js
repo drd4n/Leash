@@ -19,95 +19,79 @@ const UserModel = require('../models/User')
 //upvote
 router.route('/upvote').post(verifyToken, async (req, res, next) => {
     const post_id = req.body.post_id
-    const vote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id })
 
-    if (!vote) {
-        const interaction = new InteractionModel({
-            user_id: req.user._id,
-            post_id: post_id,
-            tags: req.body.tags,
-            interaction_type: "upvote"
-        })
-        interaction.save()
+    const downvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "downvote" })
+    if (downvote) {
+        downvote.interaction_type = "upvote"
+        await downvote.save()
         return res.json({ interaction: "upvote" })
     }
 
-    if (vote.interaction_type !== "post" && vote.interaction_type !== "comment" && vote.interaction_type !== "downvote" && vote.interaction_type !== "upvote") {
-        const interaction = new InteractionModel({
-            user_id: req.user._id,
-            post_id: post_id,
-            tags: req.body.tags,
-            interaction_type: "upvote"
-        })
-        interaction.save()
-        return res.json({ interaction: "upvote" })
-    }
-
-    if (vote.interaction_type === "downvote") {
-        vote.interaction_type = "upvote"
-        vote.save()
-        return res.json({ interaction: "upvote" })
-    }
-
-    if (vote.interaction_type === "upvote") {
-        vote.deleteOne()
+    const upvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "upvote" })
+    if (upvote) {
+        await upvote.deleteOne()
         return res.json({ interaction: "nointeraction" })
+    }
+
+    if (!upvote && !downvote) {
+        const interaction = new InteractionModel({
+            user_id: req.user._id,
+            post_id: post_id,
+            tags: req.body.tags,
+            interaction_type: "upvote"
+        })
+        await interaction.save()
+        return res.json({ interaction: "upvote" })
     }
 })
 
 //downvote
 router.route('/downvote').post(verifyToken, async (req, res, next) => {
     const post_id = req.body.post_id
-    const vote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id })
 
-    if (!vote) {
-        const interaction = new InteractionModel({
-            user_id: req.user._id,
-            post_id: post_id,
-            tags: req.body.tags,
-            interaction_type: "downvote"
-        })
-        interaction.save()
+    const upvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "upvote" })
+    if (upvote) {
+        upvote.interaction_type = "downvote"
+        await upvote.save()
         return res.json({ interaction: "downvote" })
     }
 
-    if (vote.interaction_type !== "post" && vote.interaction_type !== "comment" && vote.interaction_type !== "downvote" && vote.interaction_type !== "upvote") {
-        const interaction = new InteractionModel({
-            user_id: req.user._id,
-            post_id: post_id,
-            tags: req.body.tags,
-            interaction_type: "downvote"
-        })
-        interaction.save()
-        return res.json({ interaction: "downvote" })
-    }
-
-    if (vote.interaction_type === "upvote") {
-        vote.interaction_type = "downvote"
-        vote.save()
-        return res.json({ interaction: "downvote" })
-    }
-
-    if (vote.interaction_type === "downvote") {
-        vote.deleteOne()
+    const downvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "downvote" })
+    if (downvote) {
+        await downvote.deleteOne()
         return res.json({ interaction: "nointeraction" })
+    }
+
+    if (!upvote && !downvote) {
+        const interaction = new InteractionModel({
+            user_id: req.user._id,
+            post_id: post_id,
+            tags: req.body.tags,
+            interaction_type: "downvote"
+        })
+        await interaction.save()
+        return res.json({ interaction: "downvote" })
     }
 })
 
 //showinteraction
 router.route('/showInteraction/:post_id').get(verifyToken, async (req, res, next) => {
     const post_id = req.params.post_id
-    try {
-        const upvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "upvote" })
+
+    const upvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "upvote" })
+    if (upvote) {
         return res.json({ interaction: upvote.interaction_type })
-    } catch {
-        try {
-            const downvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "downvote" })
-            return res.json({ interaction: downvote.interaction_type })
-        } catch {
-            return res.json({ interaction: "nointeraction" })
-        }
     }
+
+    const downvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "downvote" })
+    if (downvote) {
+        return res.json({ interaction: downvote.interaction_type })
+    }
+
+    if (!downvote && !upvote) {
+        return res.json({ interaction: "nointeraction" })
+    }
+
 })
 
 module.exports = router;
