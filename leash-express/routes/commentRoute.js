@@ -19,16 +19,15 @@ const UserModel = require('../models/User')
 //route to create comment
 router.route('/createComment').post(verifyToken,async(req, res, next) => {
     const commentText = req.body.comment_text
-    const postObjectId = req.body.post_id
     const user = await UserModel.findById(req.user._id)
-    const tags = await PostModel.findById(postObjectId).tags
     const comment = new CommentModel({
         comment_text: commentText,
-        post_id: postObjectId,
+        post_id: req.body.post_id,
         owner:{
             user_id:user._id,
             firstname:user.firstname,
-            lastname:user.lastname
+            lastname:user.lastname,
+            profile_picture:user.profile_picture
         }
     })
 
@@ -37,8 +36,8 @@ router.route('/createComment').post(verifyToken,async(req, res, next) => {
         
         const interaction = new InteractionModel({
             user_id:user._id,
-            post_id:postObjectId,
-            tags:tags,
+            post_id:req.body.post_id,
+            tags:req.body.tags,
             interaction_type:"comment"
         })
 

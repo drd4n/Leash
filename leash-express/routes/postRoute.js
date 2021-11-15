@@ -23,29 +23,27 @@ const UserModel = require('../models/User')
 const InteractionModel = require('../models/Interaction')
 
 //route createPost
-router.route('/createPost').post(verifyToken,async(req, res, next) => {
+router.route('/createPost').post(verifyToken, async (req, res, next) => {
   const post_text = req.body.post_text
   const picture_link = req.body.picture_link
   const tags = req.body.tags
   const user = await UserModel.findById(req.user._id)
-  console.log("picture link array")
-  console.log(picture_link)
   const post = new PostModel({
     post_text: post_text,
     picture_link: picture_link,
-    tags:tags,
-    owner_id:user._id,
+    tags: tags,
+    owner_id: user._id,
     owner: {
-      firstname:user.firstname,
-      lastname:user.lastname
+      firstname: user.firstname,
+      lastname: user.lastname
     }
   })
 
-  if(user.profile_picture){
+  if (user.profile_picture) {
     post.owner.profile_picture = user.profile_picture
   }
 
-  if(user.approval_status){
+  if (user.approval_status) {
     post.owner.approval_status = user.approval_status
   }
 
@@ -53,10 +51,10 @@ router.route('/createPost').post(verifyToken,async(req, res, next) => {
     const savedPost = await post.save();
 
     const interaction = new InteractionModel({
-      user_id:user.user_id,
-      post_id:savedPost.post_id,
-      tags:savedPost.tags,
-      interaction_type:"post"
+      user_id: user._id,
+      post_id: savedPost._id,
+      tags: tags,
+      interaction_type: "post"
     })
 
     interaction.save()
@@ -65,7 +63,7 @@ router.route('/createPost').post(verifyToken,async(req, res, next) => {
     return next(error);
   }
 
-  
+
 })
 
 //aws config
@@ -102,7 +100,7 @@ function uploadToS3(req, res) {
 }
 
 //route and use the upload function
-router.route('/uploadImage').post(verifyToken,(req, res, next) => {
+router.route('/uploadImage').post(verifyToken, (req, res, next) => {
   uploadToS3(req, res)
     .then(downloadUrl => {
 
@@ -150,7 +148,7 @@ async function getMultipleImages(arrayOfLinks) {
 }
 
 //route to request all images of 1 post
-router.route(`/showPostImage`).post(async(req, res, next) => {
+router.route(`/showPostImage`).post(async (req, res, next) => {
   const arrayOfLinks = req.body.picture_link
   const arrayOfSrc = []
   if (Array.isArray(arrayOfLinks)) {
@@ -160,7 +158,7 @@ router.route(`/showPostImage`).post(async(req, res, next) => {
         Bucket: "leash-picture-posting",
         Key: arrayOfLinks[index]
       }
-      await s3.getObject(params).promise().then( (data) => {
+      await s3.getObject(params).promise().then((data) => {
         console.log(data)
         const b64 = Buffer.from(data.Body).toString('base64');
         const mimeType = 'image/jpg';
@@ -169,7 +167,7 @@ router.route(`/showPostImage`).post(async(req, res, next) => {
         console.log(e)
       })
     }
-      return res.json({ src: arrayOfSrc })
+    return res.json({ src: arrayOfSrc })
   }
 })
 
