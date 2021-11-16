@@ -57,7 +57,7 @@ router.route('/createPost').post(verifyToken, async (req, res, next) => {
       interaction_type: "post"
     })
 
-    interaction.save()
+    await interaction.save()
     return res.send("Post Successfully")
   } catch (error) {
     return next(error);
