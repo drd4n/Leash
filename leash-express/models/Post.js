@@ -31,6 +31,12 @@ const PostSchema = mongoose.Schema({
     owner_id: {
         type: String
     },
+    upvote: {
+        type: Number
+    },
+    downvote: {
+        type: Number
+    },
     owner: {
         type: OwnerSchema
     }

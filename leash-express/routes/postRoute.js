@@ -32,6 +32,8 @@ router.route('/createPost').post(verifyToken, async (req, res, next) => {
     post_text: post_text,
     picture_link: picture_link,
     tags: tags,
+    upvote: 0,
+    downvote: 0,
     owner_id: user._id,
     owner: {
       firstname: user.firstname,
