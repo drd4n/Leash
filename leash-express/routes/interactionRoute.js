@@ -19,7 +19,7 @@ const UserModel = require('../models/User')
 //upvote
 router.route('/upvote').post(verifyToken, async (req, res, next) => {
     const post_id = req.body.post_id
-    const post = await PostModel.findOne({post_id: post_id})
+    const post = await PostModel.findById(post_id)
 
     const downvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "downvote" })
     if (downvote) {
