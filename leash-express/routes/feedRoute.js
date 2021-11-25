@@ -35,4 +35,15 @@ router.route('/feed/:postId').get((req, res, next) => {
     })
 })
 
+//route to get all posts of specific owner
+router.route('/feed/:ownerId').get((req, res, next) => {
+    const owner_id = req.params.ownerId
+    PostModel.find({owner_id:owner_id}, (error, data) => {
+        if(error) return next(error)
+        else {
+            res.json(data)
+        }
+    })
+})
+
 module.exports = router;
