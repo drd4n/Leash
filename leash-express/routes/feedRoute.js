@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const router = express.Router();
 const cors = require('cors');
 const app = express()
+const verifyToken = require('../config/jwt')
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
@@ -36,7 +37,7 @@ router.route('/feed/:postId').get((req, res, next) => {
 })
 
 //route to get all posts of specific owner
-router.route('/feed/:ownerId').get((req, res, next) => {
+router.route('/feed/profile/:ownerId').get(verifyToken,(req, res, next) => {
     const owner_id = req.params.ownerId
     PostModel.find({owner_id:owner_id}, (error, data) => {
         if(error) return next(error)
