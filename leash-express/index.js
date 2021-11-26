@@ -2,7 +2,6 @@ const express = require('express')
 const mongoose = require('mongoose')
 var cors = require('cors');
 const createError = require('http-errors')
-const db = require('./config/db')
 
 const app = express()
 
@@ -13,7 +12,7 @@ app.use(cors())
 
 //Connecting MongoDB 
 mongoose.connect(
-    db.database,{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true, useFindAndModify:false }
+    process.env.DB,{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true, useFindAndModify:false }
 ).then(() => {
     error => {
         console.log('Could not connect to database: ' + error)
