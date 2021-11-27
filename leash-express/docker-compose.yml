@@ -1,4 +1,3 @@
-version: '3.8'
 services:
  leash-backend:
   container_name: leash-backend-prd
