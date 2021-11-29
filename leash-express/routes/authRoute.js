@@ -155,7 +155,6 @@ router.route('/register').post(
 
         const errors = validationResult(req);
         if (errors.errors.length > 0) {
-            console.log('xxxx')
             return res.status(400).json({ errors: errors.mapped() })
         }
 

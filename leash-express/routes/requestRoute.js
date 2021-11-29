@@ -90,7 +90,6 @@ router.route('/uploadFile').post(verifyToken, (req, res, next) => {
 
             s3.getObject(params, function (err, data) {
                 if (err) console.log(err)
-                console.log("data" + data)
                 const b64 = Buffer.from(data.Body).toString('base64');
                 const mimeType = 'application/pdf';
                 return res.json({
@@ -117,7 +116,6 @@ router.route('/uploadVerifyPicture').post(verifyToken, (req, res, next) => {
 
             s3.getObject(params, function (err, data) {
                 if (err) console.log(err)
-                console.log("data" + data)
                 const b64 = Buffer.from(data.Body).toString('base64');
                 const mimeType = 'image/jpg';
                 return res.json({

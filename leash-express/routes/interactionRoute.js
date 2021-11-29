@@ -57,7 +57,6 @@ router.route('/upvote').post(verifyToken, async (req, res, next) => {
 router.route('/downvote').post(verifyToken, async (req, res, next) => {
     const post_id = req.body.post_id
     const post = await PostModel.findById({_id: post_id})
-    console.log(post)
 
     const upvote = await InteractionModel.findOne({ user_id: req.user._id, post_id: post_id, interaction_type: "upvote" })
     if (upvote) {
