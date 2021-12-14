@@ -268,7 +268,7 @@ router.route('/admin').post(async(req, res, next) => {
 //admin logout
 router.route('/adminLogout').post(verifyAdmin, async (req, res, next) => {
     try {
-        const admin = await AdminModel.findByIdAndUpdate(req.user._id, { $unset: { token: 1 } })
+        await AdminModel.findOneAndUpdate({username: req.admin.username}, { $unset: { token: 1 } })
         return res.status(200).json({ message: "logged out" })
     } catch {
         return res.status(401).json({ errors: "you are not loggedin" })
